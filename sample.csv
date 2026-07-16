@@ -1,0 +1,9 @@
+id,text,label,annotator
+1,hello world,greeting,jjh
+2,python is useful,positive,zhc
+3,data quality matters,positive,cmd
+4,json parsing failed,negative,fsq
+5,fastapi is powerful,positive,jjh
+6,label is missing,,zhc
+7,duplicate sample,neutral,cmd
+8,duplicate sample,neutral,cmd
