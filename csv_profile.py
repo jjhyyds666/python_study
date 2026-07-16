@@ -43,26 +43,28 @@ def count_duplicate_values(headers, rows):
 
     return duplicate_counts
 
+def main():
+    if len(sys.argv) < 2:
+        sys.exit("请输入 CSV 文件路径")
 
-if len(sys.argv) < 2:
-    sys.exit("请输入 CSV 文件路径")
+    file_path = sys.argv[1]
 
-file_path = sys.argv[1]
+    try:
+        headers, rows = analyze_csv_file(file_path)
+    except FileNotFoundError:
+        sys.exit("文件名错误")
 
-try:
-    headers, rows = analyze_csv_file(file_path)
-except FileNotFoundError:
-    sys.exit("文件名错误")
+    empty_counts = count_empty_values(headers, rows)
+    duplicate_counts = count_duplicate_values(headers, rows)
 
-empty_counts = count_empty_values(headers, rows)
-duplicate_counts = count_duplicate_values(headers, rows)
+    print(f"列名:{headers}")
+    print(f"总数据行数:{len(rows)}")
+    print(f"总列数:{len(headers)}")
+    print(f"空值统计:{empty_counts}")
+    print(f"每一列的重复值数量:{duplicate_counts}")
+    print("前5行:")
 
-print(f"列名:{headers}")
-print(f"总数据行数:{len(rows)}")
-print(f"总列数:{len(headers)}")
-print(f"空值统计:{empty_counts}")
-print(f"每一列的重复值数量:{duplicate_counts}")
-print("前5行:")
-
-for row in rows[:5]:
-    print(row)
+    for row in rows[:5]:
+        print(row)
+if __name__=="__main__":
+    main()
