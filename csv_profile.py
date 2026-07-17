@@ -61,6 +61,20 @@ def parse_args():
     return args
 
 
+def count_unique_values(headers, rows):
+    unique_counts = {}
+
+    for header in headers:
+        unique_values = {}
+
+        for row in rows:
+            value = row[header].strip()
+            unique_values[value] = 1
+
+        unique_counts[header] = len(unique_values)
+
+    return unique_counts
+
 def main():
     args=parse_args()
     file_path=args.file_path
@@ -72,14 +86,14 @@ def main():
 
     empty_counts = count_empty_values(headers, rows)
     duplicate_counts = count_duplicate_values(headers, rows)
-
+    unique_value=count_unique_values(headers,rows)
     print(f"列名:{headers}")
     print(f"总数据行数:{len(rows)}")
     print(f"总列数:{len(headers)}")
     print(f"空值统计:{empty_counts}")
     print(f"每一列的重复值数量:{duplicate_counts}")
     print(f"前{preview}行:")
-
+    print(f"每一列唯一值：{unique_value}")
     for row in rows[:preview]:
         print(row)
 
