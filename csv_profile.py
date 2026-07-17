@@ -52,7 +52,7 @@ def parse_args():
     parser.add_argument('file_path',help='要检查的CSV文件路径')
 
     parser.add_argument('--preview',type=int,default=5,help='预览前N行数据，默认5行')
-
+    parser.add_argument('--output',help="将 Markdown 报告写入指定文件")
     args = parser.parse_args()
     if args.preview < 0:
         parser.error("--preview 不能是负数")
@@ -75,6 +75,21 @@ def count_unique_values(headers, rows):
 
     return unique_counts
 
+
+def build_markdown_report(headers, rows, empty_counts, duplicate_counts, unique_counts, preview):
+    lines=[]
+    lines.append("# CSV 数据质量报告")
+    lines.append(f"- 总数据行数: {len(rows)}")
+    lines.append(f"- 总列数: {len(headers)}")
+    lines.append(f"- 空值统计：{empty_counts}")
+    lines.append(f"- 重复值统计：{duplicate_counts}")
+    lines.append(f"- 唯一值统计：{unique_counts}")
+    lines.append(f"- 前：{preview}行预览:")
+    for row in rows[:preview]:
+        lines.append(f"--{row}")
+    return "\n".join(lines)
+
+
 def main():
     args=parse_args()
     file_path=args.file_path
@@ -83,7 +98,7 @@ def main():
         headers, rows = analyze_csv_file(file_path)
     except FileNotFoundError:
         sys.exit("文件名错误")
-
+    output_path=args.output
     empty_counts = count_empty_values(headers, rows)
     duplicate_counts = count_duplicate_values(headers, rows)
     unique_value=count_unique_values(headers,rows)
@@ -92,11 +107,23 @@ def main():
     print(f"总列数:{len(headers)}")
     print(f"空值统计:{empty_counts}")
     print(f"每一列的重复值数量:{duplicate_counts}")
-    print(f"前{preview}行:")
+    print(f"前{preview}行预览:")
     print(f"每一列唯一值：{unique_value}")
     for row in rows[:preview]:
         print(row)
 
+    report = build_markdown_report(
+        headers,
+        rows,
+        empty_counts,
+        duplicate_counts,
+        unique_value,
+        preview,
+    )
+    if output_path:
+        with open(output_path,"w",encoding="utf-8") as file:
+            file.write(report)
+        print(f"报告已写入: {output_path}")
 
 if __name__ == "__main__":
     main()
