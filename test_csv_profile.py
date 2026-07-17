@@ -32,6 +32,16 @@ def test_count_duplicate_values():
         "text": 2,
         "label": 2,
 }
-test_count_empty_values()
-test_count_duplicate_values()
-print("测试通过")
+def test_count_empty_values_with_spaces():
+    headers = ["id", "text", "label"]
+
+    rows = [
+        {"id": "1", "text": "   ", "label": "positive"},
+        {"id": "2", "text": "hello", "label": "   "},
+    ]
+    result=count_empty_values(headers,rows)
+    assert result == {
+    "id": 0,
+    "text": 1,
+    "label": 1,
+}
