@@ -1,3 +1,4 @@
+import argparse
 import csv
 import sys
 
@@ -43,12 +44,23 @@ def count_duplicate_values(headers, rows):
 
     return duplicate_counts
 
+
+def parse_args():
+    # 创建 ArgumentParser
+    parser = argparse.ArgumentParser(description="检查CSV文件的数据质量")
+    # 添加一个 file_path 参数
+    parser.add_argument('file_path',help='要检查的CSV文件路径')
+
+    parser.add_argument('--preview',type=int,default=5,help='预览前N行数据，默认5行')
+
+    # 返回 parser.parse_args()
+    return parser.parse_args()
+
+
 def main():
-    if len(sys.argv) < 2:
-        sys.exit("请输入 CSV 文件路径")
-
-    file_path = sys.argv[1]
-
+    args=parse_args()
+    file_path=args.file_path
+    preview=args.preview
     try:
         headers, rows = analyze_csv_file(file_path)
     except FileNotFoundError:
@@ -62,9 +74,11 @@ def main():
     print(f"总列数:{len(headers)}")
     print(f"空值统计:{empty_counts}")
     print(f"每一列的重复值数量:{duplicate_counts}")
-    print("前5行:")
+    print(f"前{preview}行:")
 
-    for row in rows[:5]:
+    for row in rows[:preview]:
         print(row)
-if __name__=="__main__":
+
+
+if __name__ == "__main__":
     main()
