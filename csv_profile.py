@@ -53,8 +53,12 @@ def parse_args():
 
     parser.add_argument('--preview',type=int,default=5,help='预览前N行数据，默认5行')
 
-    # 返回 parser.parse_args()
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.preview < 0:
+        parser.error("--preview 不能是负数")
+    
+    # 返回 args
+    return args
 
 
 def main():
