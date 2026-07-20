@@ -1,5 +1,6 @@
 import argparse
 import csv
+import json
 import sys
 
 
@@ -55,6 +56,7 @@ def parse_args():
         help="预览前 N 行数据，默认 5 行",
     )
     parser.add_argument("--output", help="将 Markdown 报告写入指定文件")
+    parser.add_argument("--json-output", help="将 JSON 报告写入指定文件")
 
     args = parser.parse_args()
 
@@ -130,17 +132,20 @@ def print_profile(profile):
         print(row)
 
 
+def build_json_report(profile):
+    return json.dumps(profile, ensure_ascii=False, indent=2)
+
+
 def main():
     args = parse_args()
     file_path = args.file_path
     preview = args.preview
     output_path = args.output
-
+    json_output_path = args.json_output
     try:
         headers, rows = analyze_csv_file(file_path)
     except FileNotFoundError:
         sys.exit("文件名错误")
-
     profile = build_profile(headers, rows, preview)
     report = build_markdown_report(profile)
 
@@ -149,6 +154,11 @@ def main():
         with open(output_path, "w", encoding="utf-8") as file:
             file.write(report)
         print(f"报告已写入: {output_path}")
+    if json_output_path:
+        json_report = build_json_report(profile)
+        with open(json_output_path, "w", encoding="utf-8") as file:
+            file.write(json_report)
+        print(f"JSON 报告已写入: {json_output_path}")
 
 
 if __name__ == "__main__":

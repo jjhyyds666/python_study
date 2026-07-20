@@ -1,5 +1,6 @@
 from csv_profile import (
     analyze_csv_file,
+    build_json_report,
     build_profile,
     build_markdown_report,
     count_duplicate_values,
@@ -165,3 +166,23 @@ def test_count_unique_values_strips_spaces():
     assert result == {
         "label": 2,
     }
+
+
+def test_build_json_report():
+    profile = {
+        "headers": ["id", "label"],
+        "row_count": 2,
+        "column_count": 2,
+        "preview": [
+            {"id": "1", "label": "positive"},
+        ],
+        "empty_counts": {"id": 0, "label": 1},
+        "duplicate_counts": {"id": 0, "label": 0},
+        "unique_counts": {"id": 2, "label": 2},
+    }
+
+    report = build_json_report(profile)
+
+    assert '"row_count": 2' in report
+    assert '"label": 1' in report
+    assert "positive" in report

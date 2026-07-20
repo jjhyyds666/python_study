@@ -55,6 +55,12 @@ python .\csv_profile.py .\sample.csv --preview 3
 python .\csv_profile.py .\sample.csv --preview 3 --output report.md
 ```
 
+生成 JSON 报告：
+
+```powershell
+python .\csv_profile.py .\sample.csv --preview 3 --json-output report.json
+```
+
 查看命令帮助：
 
 ```powershell
@@ -101,6 +107,46 @@ python .\csv_profile.py --help
 
 `report.md` 是本地生成文件，已加入 `.gitignore`，不会提交到仓库。
 
+## JSON 报告示例
+
+使用 `--json-output report.json` 后会生成结构化报告，适合后续被其他程序读取：
+
+```json
+{
+  "headers": ["id", "text", "label", "annotator"],
+  "row_count": 8,
+  "column_count": 4,
+  "preview": [
+    {
+      "id": "1",
+      "text": "hello world",
+      "label": "greeting",
+      "annotator": "jjh"
+    }
+  ],
+  "empty_counts": {
+    "id": 0,
+    "text": 0,
+    "label": 1,
+    "annotator": 0
+  },
+  "duplicate_counts": {
+    "id": 0,
+    "text": 1,
+    "label": 3,
+    "annotator": 4
+  },
+  "unique_counts": {
+    "id": 8,
+    "text": 7,
+    "label": 5,
+    "annotator": 4
+  }
+}
+```
+
+`report.json` 是本地生成文件，已加入 `.gitignore`，不会提交到仓库。
+
 ## 测试
 
 运行测试：
@@ -117,6 +163,7 @@ python -m pytest -v
 - 重复值统计
 - 唯一值统计
 - Markdown 报告内容生成
+- JSON 报告内容生成
 
 ## 核心函数
 
@@ -125,6 +172,7 @@ python -m pytest -v
 - `count_duplicate_values(headers, rows)`：统计每一列多出来的重复值数量。
 - `count_unique_values(headers, rows)`：统计每一列唯一值数量。
 - `build_markdown_report(...)`：生成 Markdown 数据质量报告内容。
+- `build_json_report(profile)`：生成 JSON 数据质量报告内容。
 - `parse_args()`：解析命令行参数。
 
 ## 学习目标
@@ -138,6 +186,7 @@ python -m pytest -v
 - `argparse` 命令行参数
 - `try/except` 异常处理
 - Markdown 报告生成
+- JSON 报告生成
 - pytest 单元测试
 - Git 和 GitHub 项目管理
 
@@ -146,6 +195,5 @@ python -m pytest -v
 - 使用表格形式优化 Markdown 报告
 - 支持检查指定字段是否为空
 - 支持检查标签是否属于允许范围
-- 支持导出 JSON 报告
 - 增加 GitHub Actions 自动运行测试
 - 整理为可安装的命令行工具
