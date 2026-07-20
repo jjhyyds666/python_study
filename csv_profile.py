@@ -68,13 +68,12 @@ def count_unique_values(headers, rows):
     unique_counts = {}
 
     for header in headers:
-        unique_values = {}
+        values = set()
 
         for row in rows:
-            value = row[header].strip()
-            unique_values[value] = 1
+            values.add(row[header].strip())
 
-        unique_counts[header] = len(unique_values)
+        unique_counts[header] = len(values)
 
     return unique_counts
 
