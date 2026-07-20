@@ -84,10 +84,18 @@ python .\csv_profile.py --help
 # CSV 数据质量报告
 - 总数据行数: 8
 - 总列数: 4
-- 空值统计：{'id': 0, 'text': 0, 'label': 1, 'annotator': 0}
-- 重复值统计：{'id': 0, 'text': 1, 'label': 3, 'annotator': 4}
-- 唯一值统计：{'id': 8, 'text': 7, 'label': 5, 'annotator': 4}
-- 前：3行预览:
+
+## 字段统计
+
+| 字段 | 空值数量 | 重复值数量 | 唯一值数量 |
+| --- | ---: | ---: | ---: |
+| id | 0 | 0 | 8 |
+| text | 0 | 1 | 7 |
+| label | 1 | 3 | 5 |
+| annotator | 0 | 4 | 4 |
+
+## 前 3 行预览
+
 - {'id': '1', 'text': 'hello world', 'label': 'greeting', 'annotator': 'jjh'}
 ```
 

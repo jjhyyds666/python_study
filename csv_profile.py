@@ -84,12 +84,26 @@ def build_markdown_report(headers, rows, empty_counts, duplicate_counts, unique_
     lines.append("# CSV 数据质量报告")
     lines.append(f"- 总数据行数: {len(rows)}")
     lines.append(f"- 总列数: {len(headers)}")
-    lines.append(f"- 空值统计：{empty_counts}")
-    lines.append(f"- 重复值统计：{duplicate_counts}")
-    lines.append(f"- 唯一值统计：{unique_counts}")
-    lines.append(f"- 前：{preview}行预览:")
+
+    lines.append("")
+    lines.append("## 字段统计")
+    lines.append("")
+    lines.append("| 字段 | 空值数量 | 重复值数量 | 唯一值数量 |")
+    lines.append("| --- | ---: | ---: | ---: |")
+
+    for header in headers:
+        lines.append(
+            f"| {header} | {empty_counts[header]} | "
+            f"{duplicate_counts[header]} | {unique_counts[header]} |"
+        )
+
+    lines.append("")
+    lines.append(f"## 前 {preview} 行预览")
+    lines.append("")
+
     for row in rows[:preview]:
         lines.append(f"- {row}")
+
     return "\n".join(lines)
 
 

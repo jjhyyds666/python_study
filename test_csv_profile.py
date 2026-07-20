@@ -120,7 +120,8 @@ def test_build_markdown_report():
 
     assert "# CSV 数据质量报告" in report
     assert "总数据行数" in report
-    assert "空值统计" in report
-    assert "重复值统计" in report
-    assert "唯一值统计" in report
+    assert "## 字段统计" in report
+    assert "| 字段 | 空值数量 | 重复值数量 | 唯一值数量 |" in report
+    assert "| label | 1 | 0 | 2 |" in report
+    assert "## 前 1 行预览" in report
     assert "positive" in report
