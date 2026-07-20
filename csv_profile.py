@@ -120,6 +120,17 @@ def build_profile(headers, rows, preview):
     }
 
 
+def print_profile(profile):
+    print(f"列名:{profile['headers']}")
+    print(f"总数据行数:{profile['row_count']}")
+    print(f"总列数:{profile['column_count']}")
+    print(f"空值统计:{profile['empty_counts']}")
+    print(f"每一列的重复值数量:{profile['duplicate_counts']}")
+    print(f"每一列唯一值：{profile['unique_counts']}")
+    for row in profile["preview"]:
+        print(row)
+
+
 def main():
     args = parse_args()
     file_path = args.file_path
@@ -132,17 +143,9 @@ def main():
         sys.exit("文件名错误")
 
     profile = build_profile(headers, rows, preview)
-    print(f"列名:{profile['headers']}")
-    print(f"总数据行数:{profile['row_count']}")
-    print(f"总列数:{profile['column_count']}")
-    print(f"空值统计:{profile['empty_counts']}")
-    print(f"每一列的重复值数量:{profile['duplicate_counts']}")
-    print(f"每一列唯一值：{profile['unique_counts']}")
-    for row in profile["preview"]:
-        print(row)
-
     report = build_markdown_report(profile)
 
+    print_profile(profile)
     if output_path:
         with open(output_path, "w", encoding="utf-8") as file:
             file.write(report)
