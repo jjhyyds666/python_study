@@ -148,3 +148,20 @@ def test_build_profile():
     assert profile["empty_counts"] == {"id": 0, "label": 1}
     assert profile["duplicate_counts"] == {"id": 1, "label": 1}
     assert profile["unique_counts"] == {"id": 2, "label": 2}
+
+
+def test_count_unique_values_strips_spaces():
+    headers = ["label"]
+
+    rows = [
+        {"label": "positive"},
+        {"label": " positive "},
+        {"label": "positive   "},
+        {"label": "negative"},
+    ]
+
+    result = count_unique_values(headers, rows)
+
+    assert result == {
+        "label": 2,
+    }
