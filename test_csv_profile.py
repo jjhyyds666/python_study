@@ -1,10 +1,10 @@
 from csv_profile import (
     analyze_csv_file,
+    build_profile,
     build_markdown_report,
     count_duplicate_values,
     count_empty_values,
     count_unique_values,
-    build_profile,
 )
 
 
@@ -110,14 +110,17 @@ def test_build_markdown_report():
     unique_counts = {"id": 2, "label": 2}
     preview = 1
 
-    report = build_markdown_report(
-        headers,
-        rows,
-        empty_counts,
-        duplicate_counts,
-        unique_counts,
-        preview,
-    )
+    profile = {
+        "headers": headers,
+        "row_count": len(rows),
+        "column_count": len(headers),
+        "preview": rows[:preview],
+        "empty_counts": empty_counts,
+        "duplicate_counts": duplicate_counts,
+        "unique_counts": unique_counts,
+    }
+
+    report = build_markdown_report(profile)
 
     assert "# CSV 数据质量报告" in report
     assert "总数据行数" in report
@@ -137,8 +140,8 @@ def test_build_profile():
         {"id": "2", "label": "positive"},
     ]
 
-    profile = build_profile(headers, rows)
-
+    profile = build_profile(headers, rows, 2)
+    assert profile["preview"] == rows[:2]
     assert profile["headers"] == headers
     assert profile["row_count"] == 3
     assert profile["column_count"] == 2

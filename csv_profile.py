@@ -79,11 +79,11 @@ def count_unique_values(headers, rows):
     return unique_counts
 
 
-def build_markdown_report(headers, rows, empty_counts, duplicate_counts, unique_counts, preview):
+def build_markdown_report(profile):
     lines = []
     lines.append("# CSV 数据质量报告")
-    lines.append(f"- 总数据行数: {len(rows)}")
-    lines.append(f"- 总列数: {len(headers)}")
+    lines.append(f"- 总数据行数: {profile['row_count']}")
+    lines.append(f"- 总列数: {profile['column_count']}")
 
     lines.append("")
     lines.append("## 字段统计")
@@ -91,32 +91,33 @@ def build_markdown_report(headers, rows, empty_counts, duplicate_counts, unique_
     lines.append("| 字段 | 空值数量 | 重复值数量 | 唯一值数量 |")
     lines.append("| --- | ---: | ---: | ---: |")
 
-    for header in headers:
+    for header in profile["headers"]:
         lines.append(
-            f"| {header} | {empty_counts[header]} | "
-            f"{duplicate_counts[header]} | {unique_counts[header]} |"
+            f"| {header} | {profile['empty_counts'][header]} | "
+            f"{profile['duplicate_counts'][header]} | "
+            f"{profile['unique_counts'][header]} |"
         )
 
     lines.append("")
-    lines.append(f"## 前 {preview} 行预览")
+    lines.append(f"## 前 {len(profile['preview'])} 行预览")
     lines.append("")
 
-    for row in rows[:preview]:
+    for row in profile["preview"]:
         lines.append(f"- {row}")
 
     return "\n".join(lines)
 
 
-def build_profile(headers,rows):
-    final={
-    "headers": headers,
-    "row_count": len(rows),
-    "column_count": len(headers),
-    "empty_counts": count_empty_values(headers, rows),
-    "duplicate_counts": count_duplicate_values(headers, rows),
-    "unique_counts": count_unique_values(headers, rows),
-}
-    return final
+def build_profile(headers, rows, preview):
+    return {
+        "headers": headers,
+        "row_count": len(rows),
+        "column_count": len(headers),
+        "preview": rows[:preview],
+        "empty_counts": count_empty_values(headers, rows),
+        "duplicate_counts": count_duplicate_values(headers, rows),
+        "unique_counts": count_unique_values(headers, rows),
+    }
 
 
 def main():
@@ -130,8 +131,7 @@ def main():
     except FileNotFoundError:
         sys.exit("文件名错误")
 
-    profile=build_profile(headers,rows)
-
+    profile = build_profile(headers, rows, preview)
     print(f"列名:{profile['headers']}")
     print(f"总数据行数:{profile['row_count']}")
     print(f"总列数:{profile['column_count']}")
@@ -141,14 +141,7 @@ def main():
     for row in profile["preview"]:
         print(row)
 
-    report = build_markdown_report(
-        profile["headers"],
-        rows,
-        profile["empty_counts"],
-        profile["duplicate_counts"],
-        profile["unique_counts"],
-        preview,
-    )
+    report = build_markdown_report(profile)
 
     if output_path:
         with open(output_path, "w", encoding="utf-8") as file:
