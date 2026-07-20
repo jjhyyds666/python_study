@@ -4,6 +4,7 @@ from csv_profile import (
     count_duplicate_values,
     count_empty_values,
     count_unique_values,
+    build_profile,
 )
 
 
@@ -125,3 +126,22 @@ def test_build_markdown_report():
     assert "| label | 1 | 0 | 2 |" in report
     assert "## 前 1 行预览" in report
     assert "positive" in report
+
+
+def test_build_profile():
+    headers = ["id", "label"]
+
+    rows = [
+        {"id": "1", "label": "positive"},
+        {"id": "2", "label": ""},
+        {"id": "2", "label": "positive"},
+    ]
+
+    profile = build_profile(headers, rows)
+
+    assert profile["headers"] == headers
+    assert profile["row_count"] == 3
+    assert profile["column_count"] == 2
+    assert profile["empty_counts"] == {"id": 0, "label": 1}
+    assert profile["duplicate_counts"] == {"id": 1, "label": 1}
+    assert profile["unique_counts"] == {"id": 2, "label": 2}

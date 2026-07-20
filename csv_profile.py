@@ -107,6 +107,18 @@ def build_markdown_report(headers, rows, empty_counts, duplicate_counts, unique_
     return "\n".join(lines)
 
 
+def build_profile(headers,rows):
+    final={
+    "headers": headers,
+    "row_count": len(rows),
+    "column_count": len(headers),
+    "empty_counts": count_empty_values(headers, rows),
+    "duplicate_counts": count_duplicate_values(headers, rows),
+    "unique_counts": count_unique_values(headers, rows),
+}
+    return final
+
+
 def main():
     args = parse_args()
     file_path = args.file_path
@@ -118,26 +130,23 @@ def main():
     except FileNotFoundError:
         sys.exit("文件名错误")
 
-    empty_counts = count_empty_values(headers, rows)
-    duplicate_counts = count_duplicate_values(headers, rows)
-    unique_counts = count_unique_values(headers, rows)
+    profile=build_profile(headers,rows)
 
-    print(f"列名:{headers}")
-    print(f"总数据行数:{len(rows)}")
-    print(f"总列数:{len(headers)}")
-    print(f"空值统计:{empty_counts}")
-    print(f"每一列的重复值数量:{duplicate_counts}")
-    print(f"前{preview}行预览:")
-    print(f"每一列唯一值：{unique_counts}")
-    for row in rows[:preview]:
+    print(f"列名:{profile['headers']}")
+    print(f"总数据行数:{profile['row_count']}")
+    print(f"总列数:{profile['column_count']}")
+    print(f"空值统计:{profile['empty_counts']}")
+    print(f"每一列的重复值数量:{profile['duplicate_counts']}")
+    print(f"每一列唯一值：{profile['unique_counts']}")
+    for row in profile["preview"]:
         print(row)
 
     report = build_markdown_report(
-        headers,
+        profile["headers"],
         rows,
-        empty_counts,
-        duplicate_counts,
-        unique_counts,
+        profile["empty_counts"],
+        profile["duplicate_counts"],
+        profile["unique_counts"],
         preview,
     )
 
