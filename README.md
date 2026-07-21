@@ -13,7 +13,9 @@
 - 统计每一列重复值数量
 - 统计每一列唯一值数量
 - 支持通过 `--preview` 控制预览行数
+- 支持通过 `--required` 检查必填字段是否存在或为空
 - 支持通过 `--output` 生成 Markdown 数据质量报告
+- 支持通过 `--json-output` 生成 JSON 数据质量报告
 - 处理文件不存在、预览行数为负数等常见错误
 - 使用 pytest 覆盖核心函数测试
 
@@ -61,6 +63,20 @@ python .\csv_profile.py .\sample.csv --preview 3 --output report.md
 python .\csv_profile.py .\sample.csv --preview 3 --json-output report.json
 ```
 
+检查必填字段：
+
+```powershell
+python .\csv_profile.py .\sample.csv --required label text reviewer
+```
+
+这个示例中，如果 CSV 不包含 `reviewer`，程序会将它列为缺失字段；已经存在的 `label` 和 `text` 则会统计各自的空值数量。
+
+必填字段检查也可以与报告输出组合：
+
+```powershell
+python .\csv_profile.py .\sample.csv --required label text reviewer --output report.md --json-output report.json
+```
+
 查看命令帮助：
 
 ```powershell
@@ -99,6 +115,15 @@ python .\csv_profile.py --help
 | text | 0 | 1 | 7 |
 | label | 1 | 3 | 5 |
 | annotator | 0 | 4 | 4 |
+
+## 必填字段检查
+
+- 缺失的必填字段: reviewer
+
+| 必填字段 | 空值数量 |
+| --- | ---: |
+| label | 1 |
+| text | 0 |
 
 ## 前 3 行预览
 
@@ -162,6 +187,7 @@ python -m pytest -v
 - 空格字符串空值识别
 - 重复值统计
 - 唯一值统计
+- 必填字段存在性和空值校验
 - Markdown 报告内容生成
 - JSON 报告内容生成
 
@@ -171,6 +197,8 @@ python -m pytest -v
 - `count_empty_values(headers, rows)`：统计每一列空值数量。
 - `count_duplicate_values(headers, rows)`：统计每一列多出来的重复值数量。
 - `count_unique_values(headers, rows)`：统计每一列唯一值数量。
+- `validate_required_fields(headers, rows, required_fields)`：检查必填字段是否存在并统计空值。
+- `build_profile(headers, rows, preview, required_fields)`：汇总全部统计和校验结果。
 - `build_markdown_report(...)`：生成 Markdown 数据质量报告内容。
 - `build_json_report(profile)`：生成 JSON 数据质量报告内容。
 - `parse_args()`：解析命令行参数。
@@ -184,6 +212,7 @@ python -m pytest -v
 - 字典和集合式去重思路
 - 双层循环处理结构化数据
 - `argparse` 命令行参数
+- 命令行多值参数 `nargs="*"`
 - `try/except` 异常处理
 - Markdown 报告生成
 - JSON 报告生成

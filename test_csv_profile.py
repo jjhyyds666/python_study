@@ -133,6 +133,21 @@ def test_build_markdown_report():
     assert "positive" in report
 
 
+def test_build_markdown_report_with_required_validation():
+    headers = ["id", "label"]
+    rows = [
+        {"id": "1", "label": "positive"},
+        {"id": "2", "label": ""},
+    ]
+
+    profile = build_profile(headers, rows, 1, ["label", "reviewer"])
+    report = build_markdown_report(profile)
+
+    assert "## 必填字段检查" in report
+    assert "缺失的必填字段: reviewer" in report
+    assert "| label | 1 |" in report
+
+
 def test_build_profile():
     headers = ["id", "label"]
 
@@ -226,5 +241,24 @@ def test_validate_required_fields_with_missing_field():
         "missing_fields": ["annotator"],
         "empty_required_counts": {
             "label": 0,
+        },
+    }
+
+
+def test_build_profile_with_required_fields():
+    headers = ["id", "text", "label"]
+
+    rows = [
+        {"id": "1", "text": "hello", "label": "positive"},
+        {"id": "2", "text": "", "label": ""},
+    ]
+
+    profile = build_profile(headers, rows, 2, ["text", "label", "annotator"])
+
+    assert profile["required_validation"] == {
+        "missing_fields": ["annotator"],
+        "empty_required_counts": {
+            "text": 1,
+            "label": 1,
         },
     }

@@ -61,7 +61,12 @@ def parse_args():
     )
     parser.add_argument("--output", help="将 Markdown 报告写入指定文件")
     parser.add_argument("--json-output", help="将 JSON 报告写入指定文件")
-
+    parser.add_argument(
+        "--required",
+        nargs="*",
+        default=[],
+        help="需要检查为必填的字段，例如 --required label text",
+    )
     args = parser.parse_args()
 
     if args.preview < 0:
@@ -105,6 +110,24 @@ def build_markdown_report(profile):
             f"{profile['unique_counts'][header]} |"
         )
 
+    required_validation = profile.get("required_validation", {})
+    missing_fields = required_validation.get("missing_fields", [])
+    empty_required_counts = required_validation.get("empty_required_counts", {})
+
+    if missing_fields or empty_required_counts:
+        lines.append("")
+        lines.append("## 必填字段检查")
+        lines.append("")
+        lines.append(
+            f"- 缺失的必填字段: {', '.join(missing_fields) if missing_fields else '无'}"
+        )
+        lines.append("")
+        lines.append("| 必填字段 | 空值数量 |")
+        lines.append("| --- | ---: |")
+
+        for field, empty_count in empty_required_counts.items():
+            lines.append(f"| {field} | {empty_count} |")
+
     lines.append("")
     lines.append(f"## 前 {len(profile['preview'])} 行预览")
     lines.append("")
@@ -115,8 +138,10 @@ def build_markdown_report(profile):
     return "\n".join(lines)
 
 
-def build_profile(headers, rows, preview):
+def build_profile(headers, rows, preview, required_fields=None):
     """汇总 CSV 的基础信息、字段统计和预览数据。"""
+    if required_fields is None:
+        required_fields = []
     return {
         "headers": headers,
         "row_count": len(rows),
@@ -125,6 +150,7 @@ def build_profile(headers, rows, preview):
         "empty_counts": count_empty_values(headers, rows),
         "duplicate_counts": count_duplicate_values(headers, rows),
         "unique_counts": count_unique_values(headers, rows),
+        "required_validation": validate_required_fields(headers, rows, required_fields),
     }
 
 
@@ -136,6 +162,9 @@ def print_profile(profile):
     print(f"空值统计:{profile['empty_counts']}")
     print(f"每一列的重复值数量:{profile['duplicate_counts']}")
     print(f"每一列唯一值：{profile['unique_counts']}")
+    required_validation = profile["required_validation"]
+    print(f"缺失的必填字段:{required_validation['missing_fields']}")
+    print(f"必填字段空值统计:{required_validation['empty_required_counts']}")
     for row in profile["preview"]:
         print(row)
 
@@ -173,11 +202,12 @@ def main():
     preview = args.preview
     output_path = args.output
     json_output_path = args.json_output
+    required_fields = args.required
     try:
         headers, rows = analyze_csv_file(file_path)
     except FileNotFoundError:
         sys.exit("文件名错误")
-    profile = build_profile(headers, rows, preview)
+    profile = build_profile(headers, rows, preview, required_fields)
     report = build_markdown_report(profile)
 
     print_profile(profile)
