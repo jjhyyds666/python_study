@@ -7,6 +7,7 @@ from csv_profile import (
     count_empty_values,
     count_unique_values,
     validate_required_fields,
+    validate_allowed_values,
 )
 
 
@@ -261,4 +262,51 @@ def test_build_profile_with_required_fields():
             "text": 1,
             "label": 1,
         },
+    }
+
+
+def test_validate_allowed_values():
+    headers = ["id", "label"]
+
+    rows = [
+        {"id": "1", "label": "positive"},
+        {"id": "2", "label": "unknown"},
+        {"id": "3", "label": " negative "},
+        {"id": "4", "label": "unknown"},
+        {"id": "5", "label": ""},
+        {"id": "6", "label": "other"},
+        {"id": "7", "label": "other"},
+    ]
+
+    allowed_values = ["positive", "negative"]
+
+    profile = validate_allowed_values(headers, rows, "label", allowed_values)
+
+    assert profile == {
+        "field": "label",
+        "missing_field": False,
+        "invalid_count": 4,
+        "invalid_values": ["unknown", "other"],
+    }
+
+
+def test_validate_allowed_values_with_missing_field():
+    headers = ["id", "text"]
+
+    rows = [
+        {"id": "1", "text": "hello"},
+    ]
+
+    result = validate_allowed_values(
+        headers,
+        rows,
+        "label",
+        ["positive", "negative"],
+    )
+
+    assert result == {
+        "field": "label",
+        "missing_field": True,
+        "invalid_count": 0,
+        "invalid_values": [],
     }

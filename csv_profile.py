@@ -193,6 +193,37 @@ def validate_required_fields(headers, rows, required_fields):
                 return_required["empty_required_counts"][empty_required] += 1
 
     return return_required
+def validate_allowed_values(headers, rows, field, allowed_values):
+    return_allowed_values = {
+        "field": field,
+        "missing_field": True,
+        "invalid_count": 0,
+        "invalid_values": [],
+    }
+    clean_allowed_values = {
+        allowed_value.strip() for allowed_value in allowed_values
+    }
+
+    if field not in headers:
+        return return_allowed_values
+
+    return_allowed_values["missing_field"] = False
+
+    for row in rows:
+        value = row[field].strip()
+
+        if value == "":
+            continue
+
+        if value in clean_allowed_values:
+            continue
+
+        return_allowed_values["invalid_count"] += 1
+
+        if value not in return_allowed_values["invalid_values"]:
+            return_allowed_values["invalid_values"].append(value)
+
+    return return_allowed_values
 
 
 def main():
