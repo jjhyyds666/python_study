@@ -338,3 +338,25 @@ def test_build_profile_with_allowed_value_rules():
             "invalid_values": ["unknown"],
         }
     }
+
+
+def test_build_markdown_report_with_allowed_value_validation():
+    headers = ["id", "label"]
+    rows = [
+        {"id": "1", "label": "positive"},
+        {"id": "2", "label": "unknown"},
+        {"id": "3", "label": "unknown"},
+    ]
+
+    profile = build_profile(
+        headers,
+        rows,
+        1,
+        allowed_value_rules={
+            "label": ["positive", "negative"],
+        },
+    )
+    report = build_markdown_report(profile)
+
+    assert "## 合法值检查" in report
+    assert "| label | 否 | 2 | unknown |" in report

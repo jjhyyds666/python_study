@@ -203,6 +203,23 @@ def build_markdown_report(profile):
         for field, empty_count in empty_required_counts.items():
             lines.append(f"| {field} | {empty_count} |")
 
+    allowed_value_validations = profile.get("allowed_value_validations", {})
+
+    if allowed_value_validations:
+        lines.append("")
+        lines.append("## 合法值检查")
+        lines.append("")
+        lines.append("| 字段 | 字段缺失 | 非法值数量 | 非法值 |")
+        lines.append("| --- | --- | ---: | --- |")
+
+        for field, validation in allowed_value_validations.items():
+            missing_field = "是" if validation["missing_field"] else "否"
+            invalid_values = ", ".join(validation["invalid_values"]) or "无"
+            lines.append(
+                f"| {field} | {missing_field} | "
+                f"{validation['invalid_count']} | {invalid_values} |"
+            )
+
     lines.append("")
     lines.append(f"## 前 {len(profile['preview'])} 行预览")
     lines.append("")
@@ -231,6 +248,11 @@ def print_profile(profile):
     print(f"缺失的必填字段:{required_validation['missing_fields']}")
     print(f"必填字段空值统计:{required_validation['empty_required_counts']}")
 
+    for field, validation in profile["allowed_value_validations"].items():
+        print(f"{field} 字段是否缺失:{validation['missing_field']}")
+        print(f"{field} 非法值数量:{validation['invalid_count']}")
+        print(f"{field} 非法值:{validation['invalid_values']}")
+
     for row in profile["preview"]:
         print(row)
 
@@ -256,6 +278,11 @@ def parse_args():
         default=[],
         help="需要检查为必填的字段，例如 --required label text",
     )
+    parser.add_argument(
+        "--allowed-labels",
+        nargs="+",
+        help="label 字段允许的值，例如 --allowed-labels positive negative",
+    )
     args = parser.parse_args()
 
     if args.preview < 0:
@@ -267,32 +294,37 @@ def parse_args():
 def main():
     """程序入口：读取参数、分析 CSV，并按需输出 Markdown 或 JSON 报告。"""
     args = parse_args()
-    file_path = args.file_path
-    preview = args.preview
-    output_path = args.output
-    json_output_path = args.json_output
-    required_fields = args.required
+    allowed_value_rules = {}
+
+    if args.allowed_labels is not None:
+        allowed_value_rules["label"] = args.allowed_labels
 
     try:
-        headers, rows = analyze_csv_file(file_path)
+        headers, rows = analyze_csv_file(args.file_path)
     except FileNotFoundError:
         sys.exit("文件名错误")
 
-    profile = build_profile(headers, rows, preview, required_fields)
+    profile = build_profile(
+        headers,
+        rows,
+        args.preview,
+        required_fields=args.required,
+        allowed_value_rules=allowed_value_rules,
+    )
     report = build_markdown_report(profile)
 
     print_profile(profile)
 
-    if output_path:
-        with open(output_path, "w", encoding="utf-8") as file:
+    if args.output:
+        with open(args.output, "w", encoding="utf-8") as file:
             file.write(report)
-        print(f"报告已写入: {output_path}")
+        print(f"报告已写入: {args.output}")
 
-    if json_output_path:
+    if args.json_output:
         json_report = build_json_report(profile)
-        with open(json_output_path, "w", encoding="utf-8") as file:
+        with open(args.json_output, "w", encoding="utf-8") as file:
             file.write(json_report)
-        print(f"JSON 报告已写入: {json_output_path}")
+        print(f"JSON 报告已写入: {args.json_output}")
 
 
 if __name__ == "__main__":

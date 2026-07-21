@@ -14,6 +14,7 @@
 - 统计每一列唯一值数量
 - 支持通过 `--preview` 控制预览行数
 - 支持通过 `--required` 检查必填字段是否存在或为空
+- 支持通过 `--allowed-labels` 检查 `label` 字段中的非法值
 - 支持通过 `--output` 生成 Markdown 数据质量报告
 - 支持通过 `--json-output` 生成 JSON 数据质量报告
 - 处理文件不存在、预览行数为负数等常见错误
@@ -77,6 +78,18 @@ python .\csv_profile.py .\sample.csv --required label text reviewer
 python .\csv_profile.py .\sample.csv --required label text reviewer --output report.md --json-output report.json
 ```
 
+检查 `label` 字段的合法值：
+
+```powershell
+python .\csv_profile.py .\sample.csv --allowed-labels greeting positive negative
+```
+
+同时生成 Markdown 和 JSON 报告：
+
+```powershell
+python .\csv_profile.py .\sample.csv --allowed-labels greeting positive negative --output report.md --json-output report.json
+```
+
 查看命令帮助：
 
 ```powershell
@@ -125,6 +138,12 @@ python .\csv_profile.py --help
 | label | 1 |
 | text | 0 |
 
+## 合法值检查
+
+| 字段 | 字段缺失 | 非法值数量 | 非法值 |
+| --- | --- | ---: | --- |
+| label | 否 | 2 | neutral |
+
 ## 前 3 行预览
 
 - {'id': '1', 'text': 'hello world', 'label': 'greeting', 'annotator': 'jjh'}
@@ -166,6 +185,14 @@ python .\csv_profile.py --help
     "text": 7,
     "label": 5,
     "annotator": 4
+  },
+  "allowed_value_validations": {
+    "label": {
+      "field": "label",
+      "missing_field": false,
+      "invalid_count": 2,
+      "invalid_values": ["neutral"]
+    }
   }
 }
 ```
@@ -188,6 +215,7 @@ python -m pytest -v
 - 重复值统计
 - 唯一值统计
 - 必填字段存在性和空值校验
+- 合法标签校验
 - Markdown 报告内容生成
 - JSON 报告内容生成
 
@@ -198,7 +226,8 @@ python -m pytest -v
 - `count_duplicate_values(headers, rows)`：统计每一列多出来的重复值数量。
 - `count_unique_values(headers, rows)`：统计每一列唯一值数量。
 - `validate_required_fields(headers, rows, required_fields)`：检查必填字段是否存在并统计空值。
-- `build_profile(headers, rows, preview, required_fields)`：汇总全部统计和校验结果。
+- `validate_allowed_values(headers, rows, field, allowed_values)`：检查字段中的非空值是否合法。
+- `build_profile(...)`：汇总全部统计、规则校验和预览结果。
 - `build_markdown_report(...)`：生成 Markdown 数据质量报告内容。
 - `build_json_report(profile)`：生成 JSON 数据质量报告内容。
 - `parse_args()`：解析命令行参数。
@@ -213,6 +242,7 @@ python -m pytest -v
 - 双层循环处理结构化数据
 - `argparse` 命令行参数
 - 命令行多值参数 `nargs="*"`
+- 使用规则字典配置字段合法值
 - `try/except` 异常处理
 - Markdown 报告生成
 - JSON 报告生成
@@ -223,6 +253,6 @@ python -m pytest -v
 
 - 使用表格形式优化 Markdown 报告
 - 支持检查指定字段是否为空
-- 支持检查标签是否属于允许范围
+- 支持从配置文件读取多字段规则
 - 增加 GitHub Actions 自动运行测试
 - 整理为可安装的命令行工具
