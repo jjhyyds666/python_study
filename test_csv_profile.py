@@ -166,6 +166,7 @@ def test_build_profile():
     assert profile["empty_counts"] == {"id": 0, "label": 1}
     assert profile["duplicate_counts"] == {"id": 1, "label": 1}
     assert profile["unique_counts"] == {"id": 2, "label": 2}
+    assert profile["allowed_value_validations"] == {}
 
 
 def test_count_unique_values_strips_spaces():
@@ -309,4 +310,31 @@ def test_validate_allowed_values_with_missing_field():
         "missing_field": True,
         "invalid_count": 0,
         "invalid_values": [],
+    }
+
+
+def test_build_profile_with_allowed_value_rules():
+    headers = ["id", "label"]
+    rows = [
+        {"id": "1", "label": "positive"},
+        {"id": "2", "label": "unknown"},
+        {"id": "3", "label": "unknown"},
+    ]
+
+    profile = build_profile(
+        headers,
+        rows,
+        2,
+        allowed_value_rules={
+            "label": ["positive", "negative"],
+        },
+    )
+
+    assert profile["allowed_value_validations"] == {
+        "label": {
+            "field": "label",
+            "missing_field": False,
+            "invalid_count": 2,
+            "invalid_values": ["unknown"],
+        }
     }
