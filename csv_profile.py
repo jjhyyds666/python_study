@@ -5,6 +5,7 @@ import sys
 
 
 def analyze_csv_file(file_path):
+    """读取 CSV 文件，返回表头列表和每一行组成的字典列表。"""
     with open(file_path, "r", encoding="utf-8", newline="") as file:
         reader = csv.DictReader(file)
         headers = reader.fieldnames
@@ -14,6 +15,7 @@ def analyze_csv_file(file_path):
 
 
 def count_empty_values(headers, rows):
+    """统计每一列中空字符串或只包含空格的值数量。"""
     empty_counts = {}
 
     for header in headers:
@@ -28,6 +30,7 @@ def count_empty_values(headers, rows):
 
 
 def count_duplicate_values(headers, rows):
+    """统计每一列中重复出现的值数量，只计算第一次出现之后的重复项。"""
     duplicate_counts = {}
 
     for header in headers:
@@ -47,6 +50,7 @@ def count_duplicate_values(headers, rows):
 
 
 def parse_args():
+    """解析命令行参数，并检查 preview 参数不能为负数。"""
     parser = argparse.ArgumentParser(description="检查 CSV 文件的数据质量")
     parser.add_argument("file_path", help="要检查的 CSV 文件路径")
     parser.add_argument(
@@ -67,6 +71,7 @@ def parse_args():
 
 
 def count_unique_values(headers, rows):
+    """统计每一列去重后的唯一值数量。"""
     unique_counts = {}
 
     for header in headers:
@@ -81,6 +86,7 @@ def count_unique_values(headers, rows):
 
 
 def build_markdown_report(profile):
+    """根据数据画像 profile 生成 Markdown 格式的数据质量报告。"""
     lines = []
     lines.append("# CSV 数据质量报告")
     lines.append(f"- 总数据行数: {profile['row_count']}")
@@ -110,6 +116,7 @@ def build_markdown_report(profile):
 
 
 def build_profile(headers, rows, preview):
+    """汇总 CSV 的基础信息、字段统计和预览数据。"""
     return {
         "headers": headers,
         "row_count": len(rows),
@@ -122,6 +129,7 @@ def build_profile(headers, rows, preview):
 
 
 def print_profile(profile):
+    """将数据画像的主要统计结果打印到命令行。"""
     print(f"列名:{profile['headers']}")
     print(f"总数据行数:{profile['row_count']}")
     print(f"总列数:{profile['column_count']}")
@@ -133,10 +141,33 @@ def print_profile(profile):
 
 
 def build_json_report(profile):
+    """根据数据画像 profile 生成格式化后的 JSON 字符串。"""
     return json.dumps(profile, ensure_ascii=False, indent=2)
 
 
+def validate_required_fields(headers, rows, required_fields):
+    """检查必填字段是否存在，并统计已存在必填字段的空值数量。"""
+    return_required = {
+        "missing_fields": [],
+        "empty_required_counts": {},
+    }
+
+    for required_field in required_fields:
+        if required_field not in headers:
+            return_required["missing_fields"].append(required_field)
+        else:
+            return_required["empty_required_counts"][required_field] = 0
+
+    for empty_required in return_required["empty_required_counts"]:
+        for row in rows:
+            if row[empty_required].strip() == "":
+                return_required["empty_required_counts"][empty_required] += 1
+
+    return return_required
+
+
 def main():
+    """程序入口：读取参数、分析 CSV，并按需输出 Markdown 或 JSON 报告。"""
     args = parse_args()
     file_path = args.file_path
     preview = args.preview

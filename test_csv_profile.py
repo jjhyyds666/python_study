@@ -6,6 +6,7 @@ from csv_profile import (
     count_duplicate_values,
     count_empty_values,
     count_unique_values,
+    validate_required_fields,
 )
 
 
@@ -186,3 +187,44 @@ def test_build_json_report():
     assert '"row_count": 2' in report
     assert '"label": 1' in report
     assert "positive" in report
+
+
+def test_validate_required_fields():
+    headers = ["id", "text", "label"]
+
+    rows = [
+        {"id": "1", "text": "hello", "label": "positive"},
+        {"id": "2", "text": "", "label": ""},
+    ]
+
+    required_fields = ["text", "label"]
+
+    report = validate_required_fields(headers, rows, required_fields)
+
+    assert report == {
+        "missing_fields": [],
+        "empty_required_counts": {
+            "text": 1,
+            "label": 1,
+        },
+    }
+
+
+def test_validate_required_fields_with_missing_field():
+    headers = ["id", "text", "label"]
+
+    rows = [
+        {"id": "1", "text": "hello", "label": "positive"},
+        {"id": "2", "text": "world", "label": "negative"},
+    ]
+
+    required_fields = ["label", "annotator"]
+
+    report = validate_required_fields(headers, rows, required_fields)
+
+    assert report == {
+        "missing_fields": ["annotator"],
+        "empty_required_counts": {
+            "label": 0,
+        },
+    }
