@@ -15,7 +15,12 @@ def analyze_csv_file(file_path):
         if headers is None:
             raise ValueError("CSV 文件为空或缺少表头")
         rows = list(reader)
-
+        for row_number, row in enumerate(rows, start=2):
+            if None in row:
+                raise ValueError(f"CSV 第 {row_number} 行包含多余列")
+            for header in headers:
+                if row[header] is None:
+                    raise ValueError(f"CSV 第 {row_number} 行缺少列值")
     return headers, rows
 
 

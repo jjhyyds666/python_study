@@ -17,7 +17,7 @@
 - 支持通过 `--allowed-labels` 检查 `label` 字段中的非法值
 - 支持通过 `--output` 生成 Markdown 数据质量报告
 - 支持通过 `--json-output` 生成 JSON 数据质量报告
-- 处理文件不存在、预览行数为负数等常见错误
+- 处理文件不存在、空文件、缺少表头、数据行缺列或多列等常见错误
 - 使用 pytest 覆盖核心函数测试
 
 ## 项目结构
@@ -94,6 +94,14 @@ python .\csv_profile.py .\sample.csv --allowed-labels greeting positive negative
 
 ```powershell
 python .\csv_profile.py --help
+```
+
+如果 CSV 为空、缺少表头，或者某一行的列数与表头不一致，程序会显示对应行号和错误原因后退出，例如：
+
+```text
+CSV 文件为空或缺少表头
+CSV 第 2 行缺少列值
+CSV 第 2 行包含多余列
 ```
 
 ## 示例输出
@@ -216,6 +224,8 @@ python -m pytest -v
 - 唯一值统计
 - 必填字段存在性和空值校验
 - 合法标签校验
+- 空文件与缺少表头处理
+- 数据行缺列和多列处理
 - Markdown 报告内容生成
 - JSON 报告内容生成
 
@@ -244,6 +254,8 @@ python -m pytest -v
 - 命令行多值参数 `nargs="*"`
 - 使用规则字典配置字段合法值
 - `try/except` 异常处理
+- `enumerate(..., start=2)` 与 CSV 实际行号
+- 使用 `pytest.raises()` 测试错误分支
 - Markdown 报告生成
 - JSON 报告生成
 - pytest 单元测试

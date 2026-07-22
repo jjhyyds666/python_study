@@ -382,3 +382,27 @@ def test_analyze_csv_file_with_header_only(tmp_path):
 
     assert headers == ["id", "text", "label"]
     assert rows == []
+
+
+def test_analyze_csv_file_with_missing_column_value(tmp_path):
+    csv_file = tmp_path / "missing_column.csv"
+    csv_file.write_text(
+        "id,text,label\n"
+        "1,hello\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"^CSV 第 2 行缺少列值$"):
+        analyze_csv_file(csv_file)
+
+
+def test_analyze_csv_file_with_extra_column_value(tmp_path):
+    csv_file = tmp_path / "extra_column.csv"
+    csv_file.write_text(
+        "id,text,label\n"
+        "1,hello,positive,unexpected\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"^CSV 第 2 行包含多余列$"):
+        analyze_csv_file(csv_file)
