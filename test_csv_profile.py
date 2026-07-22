@@ -406,3 +406,27 @@ def test_analyze_csv_file_with_extra_column_value(tmp_path):
 
     with pytest.raises(ValueError, match=r"^CSV 第 2 行包含多余列$"):
         analyze_csv_file(csv_file)
+
+
+def test_analyze_csv_file_with_empty_header(tmp_path):
+    csv_file = tmp_path / "empty_header.csv"
+    csv_file.write_text(
+        "id,,label\n"
+        "1,hello,positive\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"^CSV 表头包含空字段名$"):
+        analyze_csv_file(csv_file)
+
+
+def test_analyze_csv_file_with_duplicate_headers(tmp_path):
+    csv_file = tmp_path / "duplicate_headers.csv"
+    csv_file.write_text(
+        "id,label, label \n"
+        "1,positive,negative\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match=r"^CSV 表头包含重复字段: label$"):
+        analyze_csv_file(csv_file)

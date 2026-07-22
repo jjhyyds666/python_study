@@ -17,7 +17,7 @@
 - 支持通过 `--allowed-labels` 检查 `label` 字段中的非法值
 - 支持通过 `--output` 生成 Markdown 数据质量报告
 - 支持通过 `--json-output` 生成 JSON 数据质量报告
-- 处理文件不存在、空文件、缺少表头、数据行缺列或多列等常见错误
+- 处理文件不存在、空文件、缺少表头、空字段名、重复表头、数据行缺列或多列等常见错误
 - 使用 pytest 覆盖核心函数测试
 
 ## 项目结构
@@ -100,6 +100,8 @@ python .\csv_profile.py --help
 
 ```text
 CSV 文件为空或缺少表头
+CSV 表头包含空字段名
+CSV 表头包含重复字段: label
 CSV 第 2 行缺少列值
 CSV 第 2 行包含多余列
 ```
@@ -225,6 +227,7 @@ python -m pytest -v
 - 必填字段存在性和空值校验
 - 合法标签校验
 - 空文件与缺少表头处理
+- 空字段名和重复表头处理
 - 数据行缺列和多列处理
 - Markdown 报告内容生成
 - JSON 报告内容生成
@@ -255,6 +258,7 @@ python -m pytest -v
 - 使用规则字典配置字段合法值
 - `try/except` 异常处理
 - `enumerate(..., start=2)` 与 CSV 实际行号
+- 清理表头空格后检查空字段和重复字段
 - 使用 `pytest.raises()` 测试错误分支
 - Markdown 报告生成
 - JSON 报告生成

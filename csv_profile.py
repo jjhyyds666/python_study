@@ -14,6 +14,8 @@ def analyze_csv_file(file_path):
         headers = reader.fieldnames
         if headers is None:
             raise ValueError("CSV 文件为空或缺少表头")
+        validate_csv_headers(headers)
+
         rows = list(reader)
         for row_number, row in enumerate(rows, start=2):
             if None in row:
@@ -22,6 +24,21 @@ def analyze_csv_file(file_path):
                 if row[header] is None:
                     raise ValueError(f"CSV 第 {row_number} 行缺少列值")
     return headers, rows
+
+
+def validate_csv_headers(headers):
+    seen_headers = []
+
+    for header in headers:
+        clean_header = header.strip()
+
+        if clean_header == "":
+            raise ValueError("CSV 表头包含空字段名")
+
+        if clean_header in seen_headers:
+            raise ValueError(f"CSV 表头包含重复字段: {clean_header}")
+
+        seen_headers.append(clean_header)
 
 
 def count_empty_values(headers, rows):
