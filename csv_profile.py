@@ -9,20 +9,23 @@ import sys
 
 def analyze_csv_file(file_path):
     """读取 CSV 文件，返回表头列表和每一行组成的字典列表。"""
-    with open(file_path, "r", encoding="utf-8", newline="") as file:
-        reader = csv.DictReader(file)
-        headers = reader.fieldnames
-        if headers is None:
-            raise ValueError("CSV 文件为空或缺少表头")
-        validate_csv_headers(headers)
+    try:
+        with open(file_path, "r", encoding="utf-8-sig", newline="") as file:
+            reader = csv.DictReader(file)
+            headers = reader.fieldnames
+            if headers is None:
+                raise ValueError("CSV 文件为空或缺少表头")
+            validate_csv_headers(headers)
 
-        rows = list(reader)
-        for row_number, row in enumerate(rows, start=2):
-            if None in row:
-                raise ValueError(f"CSV 第 {row_number} 行包含多余列")
-            for header in headers:
-                if row[header] is None:
-                    raise ValueError(f"CSV 第 {row_number} 行缺少列值")
+            rows = list(reader)
+            for row_number, row in enumerate(rows, start=2):
+                if None in row:
+                    raise ValueError(f"CSV 第 {row_number} 行包含多余列")
+                for header in headers:
+                    if row[header] is None:
+                        raise ValueError(f"CSV 第 {row_number} 行缺少列值")
+    except UnicodeDecodeError as error:
+        raise ValueError("CSV 文件不是有效的 UTF-8 编码") from error
     return headers, rows
 
 

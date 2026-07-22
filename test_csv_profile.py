@@ -430,3 +430,32 @@ def test_analyze_csv_file_with_duplicate_headers(tmp_path):
 
     with pytest.raises(ValueError, match=r"^CSV 表头包含重复字段: label$"):
         analyze_csv_file(csv_file)
+
+
+def test_analyze_csv_file_supports_utf8_bom(tmp_path):
+    csv_file = tmp_path / "bom.csv"
+    csv_file.write_text(
+        "id,text,label\n"
+        "1,hello,positive\n",
+        encoding="utf-8-sig",
+    )
+
+    headers, rows = analyze_csv_file(csv_file)
+
+    assert headers == ["id", "text", "label"]
+    assert rows[0] == {
+        "id": "1",
+        "text": "hello",
+        "label": "positive",
+    }
+
+
+def test_analyze_csv_file_with_invalid_utf8(tmp_path):
+    csv_file = tmp_path / "invalid.csv"
+    csv_file.write_bytes(b"\xff\xfe\x00\x00")
+
+    with pytest.raises(
+        ValueError,
+        match=r"^CSV 文件不是有效的 UTF-8 编码$",
+    ):
+        analyze_csv_file(csv_file)
