@@ -12,6 +12,8 @@ def analyze_csv_file(file_path):
     with open(file_path, "r", encoding="utf-8", newline="") as file:
         reader = csv.DictReader(file)
         headers = reader.fieldnames
+        if headers is None:
+            raise ValueError("CSV 文件为空或缺少表头")
         rows = list(reader)
 
     return headers, rows
@@ -303,7 +305,8 @@ def main():
         headers, rows = analyze_csv_file(args.file_path)
     except FileNotFoundError:
         sys.exit("文件名错误")
-
+    except ValueError as error:
+        sys.exit(str(error))
     profile = build_profile(
         headers,
         rows,

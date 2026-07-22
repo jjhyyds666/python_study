@@ -1,3 +1,4 @@
+import pytest
 from csv_profile import (
     analyze_csv_file,
     build_json_report,
@@ -360,3 +361,24 @@ def test_build_markdown_report_with_allowed_value_validation():
 
     assert "## 合法值检查" in report
     assert "| label | 否 | 2 | unknown |" in report
+
+
+def test_analyze_csv_file_with_empty_file(tmp_path):
+    csv_file = tmp_path / "empty.csv"
+    csv_file.write_text("", encoding="utf-8")
+
+    with pytest.raises(ValueError, match="CSV 文件为空或缺少表头"):
+        analyze_csv_file(csv_file)
+
+
+def test_analyze_csv_file_with_header_only(tmp_path):
+    csv_file = tmp_path / "header_only.csv"
+    csv_file.write_text(
+        "id,text,label\n",
+        encoding="utf-8",
+    )
+
+    headers, rows = analyze_csv_file(csv_file)
+
+    assert headers == ["id", "text", "label"]
+    assert rows == []
