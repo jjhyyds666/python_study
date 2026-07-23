@@ -1,20 +1,57 @@
 import argparse
 import csv
 import json
+import logging
 import sys
+from pathlib import Path
+from typing import TypedDict, cast
+
+logger = logging.getLogger(__name__)
+
+FilePath = str | Path
+Headers = list[str]
+Row = dict[str, str]
+Rows = list[Row]
+Counts = dict[str, int]
+AllowedValueRules = dict[str, list[str]]
+
+
+class RequiredValidation(TypedDict):
+    missing_fields: list[str]
+    empty_required_counts: Counts
+
+
+class AllowedValueValidation(TypedDict):
+    field: str
+    missing_field: bool
+    invalid_count: int
+    invalid_values: list[str]
+
+
+class Profile(TypedDict):
+    headers: Headers
+    row_count: int
+    column_count: int
+    preview: Rows
+    empty_counts: Counts
+    duplicate_counts: Counts
+    unique_counts: Counts
+    required_validation: RequiredValidation
+    allowed_value_validations: dict[str, AllowedValueValidation]
 
 
 # 数据读取与基础统计
 
 
-def analyze_csv_file(file_path):
+def analyze_csv_file(file_path: FilePath) -> tuple[Headers, Rows]:
     """读取 CSV 文件，返回表头列表和每一行组成的字典列表。"""
     try:
         with open(file_path, "r", encoding="utf-8-sig", newline="") as file:
             reader = csv.DictReader(file)
-            headers = reader.fieldnames
-            if headers is None:
+            raw_headers = reader.fieldnames
+            if raw_headers is None:
                 raise ValueError("CSV 文件为空或缺少表头")
+            headers = list(raw_headers)
             validate_csv_headers(headers)
 
             rows = list(reader)
@@ -26,10 +63,10 @@ def analyze_csv_file(file_path):
                         raise ValueError(f"CSV 第 {row_number} 行缺少列值")
     except UnicodeDecodeError as error:
         raise ValueError("CSV 文件不是有效的 UTF-8 编码") from error
-    return headers, rows
+    return headers, cast(Rows, rows)
 
 
-def validate_csv_headers(headers):
+def validate_csv_headers(headers: Headers) -> None:
     seen_headers = []
 
     for header in headers:
@@ -44,7 +81,7 @@ def validate_csv_headers(headers):
         seen_headers.append(clean_header)
 
 
-def count_empty_values(headers, rows):
+def count_empty_values(headers: Headers, rows: Rows) -> Counts:
     """统计每一列中空字符串或只包含空格的值数量。"""
     empty_counts = {}
 
@@ -59,7 +96,7 @@ def count_empty_values(headers, rows):
     return empty_counts
 
 
-def count_duplicate_values(headers, rows):
+def count_duplicate_values(headers: Headers, rows: Rows) -> Counts:
     """统计每一列中重复出现的值数量，只计算第一次出现之后的重复项。"""
     duplicate_counts = {}
 
@@ -79,7 +116,7 @@ def count_duplicate_values(headers, rows):
     return duplicate_counts
 
 
-def count_unique_values(headers, rows):
+def count_unique_values(headers: Headers, rows: Rows) -> Counts:
     """统计每一列去重后的唯一值数量。"""
     unique_counts = {}
 
@@ -97,9 +134,13 @@ def count_unique_values(headers, rows):
 # 字段规则校验
 
 
-def validate_required_fields(headers, rows, required_fields):
+def validate_required_fields(
+    headers: Headers,
+    rows: Rows,
+    required_fields: list[str],
+) -> RequiredValidation:
     """检查必填字段是否存在，并统计已存在必填字段的空值数量。"""
-    return_required = {
+    return_required: RequiredValidation = {
         "missing_fields": [],
         "empty_required_counts": {},
     }
@@ -118,9 +159,14 @@ def validate_required_fields(headers, rows, required_fields):
     return return_required
 
 
-def validate_allowed_values(headers, rows, field, allowed_values):
+def validate_allowed_values(
+    headers: Headers,
+    rows: Rows,
+    field: str,
+    allowed_values: list[str],
+) -> AllowedValueValidation:
     """检查指定字段中非空值是否属于允许值列表。"""
-    return_allowed_values = {
+    return_allowed_values: AllowedValueValidation = {
         "field": field,
         "missing_field": True,
         "invalid_count": 0,
@@ -156,12 +202,12 @@ def validate_allowed_values(headers, rows, field, allowed_values):
 
 
 def build_profile(
-    headers,
-    rows,
-    preview,
-    required_fields=None,
-    allowed_value_rules=None,
-):
+    headers: Headers,
+    rows: Rows,
+    preview: int,
+    required_fields: list[str] | None = None,
+    allowed_value_rules: AllowedValueRules | None = None,
+) -> Profile:
     """汇总 CSV 的基础信息、字段统计、规则校验和预览数据。"""
     if required_fields is None:
         required_fields = []
@@ -192,7 +238,7 @@ def build_profile(
     }
 
 
-def build_markdown_report(profile):
+def build_markdown_report(profile: Profile) -> str:
     """根据数据画像 profile 生成 Markdown 格式的数据质量报告。"""
     lines = []
     lines.append("# CSV 数据质量报告")
@@ -257,12 +303,12 @@ def build_markdown_report(profile):
     return "\n".join(lines)
 
 
-def build_json_report(profile):
+def build_json_report(profile: Profile) -> str:
     """根据数据画像 profile 生成格式化后的 JSON 字符串。"""
     return json.dumps(profile, ensure_ascii=False, indent=2)
 
 
-def print_profile(profile):
+def print_profile(profile: Profile) -> None:
     """将数据画像的主要统计结果打印到命令行。"""
     print(f"列名:{profile['headers']}")
     print(f"总数据行数:{profile['row_count']}")
@@ -287,7 +333,7 @@ def print_profile(profile):
 # 命令行入口
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     """解析命令行参数，并检查 preview 参数不能为负数。"""
     parser = argparse.ArgumentParser(description="检查 CSV 文件的数据质量")
     parser.add_argument("file_path", help="要检查的 CSV 文件路径")
@@ -310,6 +356,11 @@ def parse_args():
         nargs="+",
         help="label 字段允许的值，例如 --allowed-labels positive negative",
     )
+    parser.add_argument(
+        "--verbose",
+        action="store_true",
+        help="显示详细运行日志",
+    )
     args = parser.parse_args()
 
     if args.preview < 0:
@@ -317,15 +368,27 @@ def parse_args():
 
     return args
 
+def configure_logging(verbose: bool) -> None:
+    """根据 verbose 开关配置命令行日志等级。"""
+    if verbose:
+        level = logging.INFO
+    else:
+        level = logging.WARNING
 
-def main():
+    logging.basicConfig(
+        level=level,
+        format="%(levelname)s: %(message)s",
+    )
+
+def main() -> None:
     """程序入口：读取参数、分析 CSV，并按需输出 Markdown 或 JSON 报告。"""
     args = parse_args()
+    configure_logging(args.verbose)
     allowed_value_rules = {}
 
     if args.allowed_labels is not None:
         allowed_value_rules["label"] = args.allowed_labels
-
+    logger.info("正在读取 CSV: %s", args.file_path)
     try:
         headers, rows = analyze_csv_file(args.file_path)
     except FileNotFoundError:
@@ -338,6 +401,11 @@ def main():
         args.preview,
         required_fields=args.required,
         allowed_value_rules=allowed_value_rules,
+    )
+    logger.info(
+    "CSV 分析完成: %d 行, %d 列",
+    profile["row_count"],
+    profile["column_count"],
     )
     report = build_markdown_report(profile)
 

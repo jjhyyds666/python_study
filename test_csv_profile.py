@@ -1,14 +1,18 @@
+import sys
+
 import pytest
+
 from csv_profile import (
     analyze_csv_file,
     build_json_report,
-    build_profile,
     build_markdown_report,
+    build_profile,
     count_duplicate_values,
     count_empty_values,
     count_unique_values,
-    validate_required_fields,
+    parse_args,
     validate_allowed_values,
+    validate_required_fields,
 )
 
 
@@ -459,3 +463,27 @@ def test_analyze_csv_file_with_invalid_utf8(tmp_path):
         match=r"^CSV 文件不是有效的 UTF-8 编码$",
     ):
         analyze_csv_file(csv_file)
+
+
+def test_parse_args_enables_verbose(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["csv_profile.py", "sample.csv", "--verbose"],
+    )
+
+    args = parse_args()
+
+    assert args.verbose is True
+
+
+def test_parse_args_disables_verbose_by_default(monkeypatch):
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        ["csv_profile.py", "sample.csv"],
+    )
+
+    args = parse_args()
+
+    assert args.verbose is False

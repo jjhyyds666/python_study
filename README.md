@@ -4,7 +4,7 @@
 
 这个项目来自我的 Python 软件工程学习路线，目标是把基础语法练习推进到一个可维护、可测试、可展示的工程项目。项目场景参考 AI 数据标注、数据清洗和数据交付流程中常见的数据质检需求。
 
-当前状态：第一阶段功能已完成，包含 25 个 pytest 测试。
+当前状态：第一阶段功能已完成，第二阶段 CLI 工程化进行中，包含 27 个 pytest 测试，并通过 mypy 严格类型检查。
 
 ## 功能
 
@@ -17,11 +17,14 @@
 - 支持通过 `--preview` 控制预览行数
 - 支持通过 `--required` 检查必填字段是否存在或为空
 - 支持通过 `--allowed-labels` 检查 `label` 字段中的非法值
+- 支持通过 `--verbose` 显示详细运行日志
 - 支持通过 `--output` 生成 Markdown 数据质量报告
 - 支持通过 `--json-output` 生成 JSON 数据质量报告
 - 处理文件不存在、空文件、缺少表头、空字段名、重复表头、数据行缺列或多列等常见错误
 - 兼容普通 UTF-8 和带 BOM 的 UTF-8 CSV，并为非法编码提供清晰错误
+- 为主要数据结构和函数提供类型标注
 - 使用 pytest 覆盖核心函数测试
+- 使用 mypy 严格模式执行静态类型检查
 
 ## 项目结构
 
@@ -30,18 +33,35 @@ dataqa-cli/
 ├── .gitignore
 ├── README.md
 ├── csv_profile.py
+├── pyproject.toml
+├── requirements-dev.txt
 ├── sample.csv
 └── test_csv_profile.py
 ```
 
 ## 运行环境
 
-- Python 3.x
+- Python 3.14
 - pytest，用于运行测试
+- mypy，用于静态类型检查
 
-项目主体只使用 Python 标准库；pytest 仅用于测试。
+项目主体只使用 Python 标准库；pytest 和 mypy 属于开发工具。
 
 输入 CSV 应使用 UTF-8 编码。普通 UTF-8 与 Excel 常见的 UTF-8 BOM 文件都可以读取。
+
+## 开发环境
+
+创建项目虚拟环境：
+
+```powershell
+python -m venv .venv
+```
+
+安装测试和类型检查工具：
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
+```
 
 ## 快速开始
 
@@ -55,6 +75,12 @@ python .\csv_profile.py .\sample.csv
 
 ```powershell
 python .\csv_profile.py .\sample.csv --preview 3
+```
+
+显示详细运行日志：
+
+```powershell
+python .\csv_profile.py .\sample.csv --verbose
 ```
 
 生成 Markdown 报告：
@@ -220,7 +246,13 @@ CSV 文件不是有效的 UTF-8 编码
 运行测试：
 
 ```powershell
-python -m pytest -v
+.\.venv\Scripts\python.exe -m pytest -q
+```
+
+执行严格类型检查：
+
+```powershell
+.\.venv\Scripts\python.exe -m mypy
 ```
 
 当前测试覆盖：
@@ -238,6 +270,7 @@ python -m pytest -v
 - UTF-8 BOM 兼容和非法编码处理
 - Markdown 报告内容生成
 - JSON 报告内容生成
+- `--verbose` 开关的启用和默认关闭行为
 
 ## 核心函数
 
@@ -251,6 +284,7 @@ python -m pytest -v
 - `build_markdown_report(...)`：生成 Markdown 数据质量报告内容。
 - `build_json_report(profile)`：生成 JSON 数据质量报告内容。
 - `parse_args()`：解析命令行参数。
+- `configure_logging(verbose)`：根据 `--verbose` 开关配置日志等级。
 
 ## 学习目标
 
@@ -272,12 +306,14 @@ python -m pytest -v
 - Markdown 报告生成
 - JSON 报告生成
 - pytest 单元测试
+- 类型别名、`TypedDict` 和函数类型标注
+- 使用 mypy 严格检查类型
+- 使用 `.venv` 隔离项目开发工具
+- 使用 `logging` 和 `--verbose` 输出运行日志
 - Git 和 GitHub 项目管理
 
 ## 后续计划
 
 - 支持从配置文件读取多字段规则
-- 增加类型标注和日志
-- 使用 `pyproject.toml` 整理项目和依赖
 - 增加 GitHub Actions 自动运行测试
 - 整理为可安装的命令行工具
