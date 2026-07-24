@@ -1,0 +1,6 @@
+{
+  "required_fields": ["id", "text", "label"],
+  "allowed_value_rules": {
+    "label": ["greeting", "positive", "negative", "neutral"]
+  }
+}

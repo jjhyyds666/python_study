@@ -1,3 +1,4 @@
+import json
 import sys
 
 import pytest
@@ -10,6 +11,7 @@ from csv_profile import (
     count_duplicate_values,
     count_empty_values,
     count_unique_values,
+    load_config,
     parse_args,
     validate_allowed_values,
     validate_required_fields,
@@ -487,3 +489,35 @@ def test_parse_args_disables_verbose_by_default(monkeypatch):
     args = parse_args()
 
     assert args.verbose is False
+
+
+
+def test_load_config(tmp_path):
+    config_data = {
+        "required_fields": ["id", "label"],
+        "allowed_value_rules": {
+            "label": ["positive", "negative"],
+        },
+    }
+    config_file = tmp_path / "rules.json"
+    config_file.write_text(
+        json.dumps(config_data),
+        encoding="utf-8",
+    )
+    results = load_config(config_file)
+
+    assert results == config_data
+
+
+def test_load_config_with_invalid_json(tmp_path):
+    config_file = tmp_path / "rules.json"
+    config_file.write_text(
+        '{"required_fields": [',
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ValueError,
+        match=r"^配置文件不是有效的 JSON$",
+    ):
+        load_config(config_file)

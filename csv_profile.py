@@ -28,6 +28,11 @@ class AllowedValueValidation(TypedDict):
     invalid_values: list[str]
 
 
+class Config(TypedDict):
+    required_fields: list[str]
+    allowed_value_rules: AllowedValueRules
+
+
 class Profile(TypedDict):
     headers: Headers
     row_count: int
@@ -64,6 +69,17 @@ def analyze_csv_file(file_path: FilePath) -> tuple[Headers, Rows]:
     except UnicodeDecodeError as error:
         raise ValueError("CSV 文件不是有效的 UTF-8 编码") from error
     return headers, cast(Rows, rows)
+
+
+def load_config(file_path: FilePath) -> Config:
+    """读取 JSON 配置文件并返回数据质量检查规则。"""
+    try:
+        with open(file_path, "r", encoding="utf-8") as file:
+            config_data = json.load(file)
+    except json.JSONDecodeError as error:
+        raise ValueError("配置文件不是有效的 JSON") from error
+
+    return cast(Config, config_data)
 
 
 def validate_csv_headers(headers: Headers) -> None:
