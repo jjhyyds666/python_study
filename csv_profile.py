@@ -6,7 +6,10 @@ import sys
 from pathlib import Path
 from typing import TypedDict, cast
 
-from config_loader import AllowedValueRules
+from config_loader import (AllowedValueRules,
+                           load_config,
+
+                           )
 
 logger = logging.getLogger(__name__)
 
@@ -362,6 +365,10 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="显示详细运行日志",
     )
+    parser.add_argument(
+        "--config",
+        help="JSON 规则配置文件路径",
+    )
     args = parser.parse_args()
 
     if args.preview < 0:
@@ -387,10 +394,26 @@ def main() -> None:
     """程序入口：读取参数、分析 CSV，并按需输出 Markdown 或 JSON 报告。"""
     args = parse_args()
     configure_logging(args.verbose)
+    required_fields = []
     allowed_value_rules = {}
+
+    if args.config:
+        try:
+            config = load_config(args.config)
+        except FileNotFoundError:
+            sys.exit("配置文件不存在")
+        except ValueError as error:
+            sys.exit(str(error))
+
+        required_fields = config["required_fields"]
+        allowed_value_rules = config["allowed_value_rules"]
+
+    if args.required:
+        required_fields = args.required
 
     if args.allowed_labels is not None:
         allowed_value_rules["label"] = args.allowed_labels
+
     logger.info("正在读取 CSV: %s", args.file_path)
     try:
         headers, rows = analyze_csv_file(args.file_path)
@@ -402,7 +425,7 @@ def main() -> None:
         headers,
         rows,
         args.preview,
-        required_fields=args.required,
+        required_fields=required_fields,
         allowed_value_rules=allowed_value_rules,
     )
     logger.info(

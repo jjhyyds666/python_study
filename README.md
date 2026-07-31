@@ -4,7 +4,7 @@
 
 这个项目来自我的 Python 软件工程学习路线，目标是把基础语法练习推进到一个可维护、可测试、可展示的工程项目。项目场景参考 AI 数据标注、数据清洗和数据交付流程中常见的数据质检需求。
 
-当前状态：第一阶段功能已完成，第二阶段 CLI 工程化进行中，包含 35 个 pytest 测试，并通过 mypy 严格类型检查。
+当前状态：第一阶段功能已完成，第二阶段 CLI 工程化进行中，包含 39 个 pytest 测试，并通过 mypy 严格类型检查。
 
 ## 功能
 
@@ -17,8 +17,8 @@
 - 支持通过 `--preview` 控制预览行数
 - 支持通过 `--required` 检查必填字段是否存在或为空
 - 支持通过 `--allowed-labels` 检查 `label` 字段中的非法值
+- 支持通过 `--config` 加载 JSON 必填字段和合法值规则
 - 支持通过 `--verbose` 显示详细运行日志
-- 支持读取和验证 JSON 规则配置
 - 支持通过 `--output` 生成 Markdown 数据质量报告
 - 支持通过 `--json-output` 生成 JSON 数据质量报告
 - 处理文件不存在、空文件、缺少表头、空字段名、重复表头、数据行缺列或多列等常见错误
@@ -86,6 +86,25 @@ python .\csv_profile.py .\sample.csv --preview 3
 ```powershell
 python .\csv_profile.py .\sample.csv --verbose
 ```
+
+使用 JSON 规则配置：
+
+```powershell
+python .\csv_profile.py .\sample.csv --config .\rules.json
+```
+
+配置示例：
+
+```json
+{
+  "required_fields": ["id", "text", "label"],
+  "allowed_value_rules": {
+    "label": ["greeting", "positive", "negative", "neutral"]
+  }
+}
+```
+
+命令行中的 `--required` 和 `--allowed-labels` 会覆盖配置文件中的对应规则。
 
 生成 Markdown 报告：
 
@@ -276,6 +295,7 @@ CSV 文件不是有效的 UTF-8 编码
 - JSON 报告内容生成
 - `--verbose` 开关的启用和默认关闭行为
 - JSON 配置读取、格式错误和配置结构校验
+- `--config` 命令行接入、错误提示和命令行规则覆盖
 
 ## 核心函数
 
@@ -322,6 +342,5 @@ CSV 文件不是有效的 UTF-8 编码
 
 ## 后续计划
 
-- 通过 `--config` 将 JSON 规则配置接入命令行
 - 增加 GitHub Actions 自动运行测试
 - 整理为可安装的命令行工具

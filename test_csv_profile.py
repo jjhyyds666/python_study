@@ -1,3 +1,4 @@
+import json
 import sys
 
 import pytest
@@ -10,6 +11,7 @@ from csv_profile import (
     count_duplicate_values,
     count_empty_values,
     count_unique_values,
+    main,
     parse_args,
     validate_allowed_values,
     validate_required_fields,
@@ -487,3 +489,124 @@ def test_parse_args_disables_verbose_by_default(monkeypatch):
     args = parse_args()
 
     assert args.verbose is False
+
+
+def write_cli_csv(tmp_path):
+    csv_file = tmp_path / "sample.csv"
+    csv_file.write_text(
+        "id,text,label\n"
+        "1,hello,positive\n"
+        "2,world,\n",
+        encoding="utf-8",
+    )
+    return csv_file
+
+
+def write_cli_config(tmp_path):
+    config_file = tmp_path / "rules.json"
+    config_file.write_text(
+        json.dumps(
+            {
+                "required_fields": ["id", "label"],
+                "allowed_value_rules": {
+                    "label": ["positive", "negative"],
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    return config_file
+
+
+def test_main_uses_config_rules(monkeypatch, tmp_path, capsys):
+    csv_file = write_cli_csv(tmp_path)
+    config_file = write_cli_config(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "csv_profile.py",
+            str(csv_file),
+            "--config",
+            str(config_file),
+            "--preview",
+            "0",
+        ],
+    )
+
+    main()
+
+    captured = capsys.readouterr()
+    assert "必填字段空值统计:{'id': 0, 'label': 1}" in captured.out
+    assert "label 非法值数量:0" in captured.out
+
+
+def test_main_cli_rules_override_config(monkeypatch, tmp_path, capsys):
+    csv_file = write_cli_csv(tmp_path)
+    config_file = write_cli_config(tmp_path)
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "csv_profile.py",
+            str(csv_file),
+            "--config",
+            str(config_file),
+            "--required",
+            "text",
+            "--allowed-labels",
+            "negative",
+            "--preview",
+            "0",
+        ],
+    )
+
+    main()
+
+    captured = capsys.readouterr()
+    assert "必填字段空值统计:{'text': 0}" in captured.out
+    assert "label 非法值数量:1" in captured.out
+    assert "label 非法值:['positive']" in captured.out
+
+
+def test_main_reports_missing_config(monkeypatch, tmp_path):
+    csv_file = write_cli_csv(tmp_path)
+    missing_config = tmp_path / "missing.json"
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "csv_profile.py",
+            str(csv_file),
+            "--config",
+            str(missing_config),
+        ],
+    )
+
+    with pytest.raises(SystemExit, match=r"^配置文件不存在$"):
+        main()
+
+
+def test_main_reports_invalid_json_config(monkeypatch, tmp_path):
+    csv_file = write_cli_csv(tmp_path)
+    config_file = tmp_path / "invalid.json"
+    config_file.write_text(
+        '{"required_fields": [',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "csv_profile.py",
+            str(csv_file),
+            "--config",
+            str(config_file),
+        ],
+    )
+
+    with pytest.raises(
+        SystemExit,
+        match=r"^配置文件不是有效的 JSON$",
+    ):
+        main()
