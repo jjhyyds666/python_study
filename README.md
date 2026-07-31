@@ -26,6 +26,7 @@
 - 为主要数据结构和函数提供类型标注
 - 使用 pytest 覆盖核心函数测试
 - 使用 mypy 严格模式执行静态类型检查
+- 每次 push 后通过 GitHub Actions 自动运行 pytest 和 mypy
 
 ## 项目结构
 
@@ -297,6 +298,18 @@ CSV 文件不是有效的 UTF-8 编码
 - JSON 配置读取、格式错误和配置结构校验
 - `--config` 命令行接入、错误提示和命令行规则覆盖
 
+## 持续集成
+
+仓库通过 `.github/workflows/ci.yml` 在每次 push 后自动：
+
+1. 下载当前提交。
+2. 准备 Python 3.14。
+3. 安装 `requirements-dev.txt`。
+4. 运行全部 pytest 测试。
+5. 运行 mypy 严格类型检查。
+
+pytest 和 mypy 必须全部通过，工作流才会显示绿色成功。
+
 ## 核心函数
 
 - `analyze_csv_file(file_path)`：读取 CSV 文件，返回列名和数据行。
@@ -342,5 +355,4 @@ CSV 文件不是有效的 UTF-8 编码
 
 ## 后续计划
 
-- 增加 GitHub Actions 自动运行测试
 - 整理为可安装的命令行工具
