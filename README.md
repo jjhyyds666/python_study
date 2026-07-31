@@ -4,7 +4,7 @@
 
 这个项目来自我的 Python 软件工程学习路线，目标是把基础语法练习推进到一个可维护、可测试、可展示的工程项目。项目场景参考 AI 数据标注、数据清洗和数据交付流程中常见的数据质检需求。
 
-当前状态：第一阶段功能已完成，第二阶段 CLI 工程化进行中，包含 27 个 pytest 测试，并通过 mypy 严格类型检查。
+当前状态：第一阶段功能已完成，第二阶段 CLI 工程化进行中，包含 35 个 pytest 测试，并通过 mypy 严格类型检查。
 
 ## 功能
 
@@ -18,6 +18,7 @@
 - 支持通过 `--required` 检查必填字段是否存在或为空
 - 支持通过 `--allowed-labels` 检查 `label` 字段中的非法值
 - 支持通过 `--verbose` 显示详细运行日志
+- 支持读取和验证 JSON 规则配置
 - 支持通过 `--output` 生成 Markdown 数据质量报告
 - 支持通过 `--json-output` 生成 JSON 数据质量报告
 - 处理文件不存在、空文件、缺少表头、空字段名、重复表头、数据行缺列或多列等常见错误
@@ -32,10 +33,13 @@
 dataqa-cli/
 ├── .gitignore
 ├── README.md
+├── config_loader.py
 ├── csv_profile.py
 ├── pyproject.toml
 ├── requirements-dev.txt
+├── rules.json
 ├── sample.csv
+├── test_config_loader.py
 └── test_csv_profile.py
 ```
 
@@ -271,10 +275,13 @@ CSV 文件不是有效的 UTF-8 编码
 - Markdown 报告内容生成
 - JSON 报告内容生成
 - `--verbose` 开关的启用和默认关闭行为
+- JSON 配置读取、格式错误和配置结构校验
 
 ## 核心函数
 
 - `analyze_csv_file(file_path)`：读取 CSV 文件，返回列名和数据行。
+- `load_config(file_path)`：读取并验证 JSON 规则配置。
+- `validate_config(config_data)`：验证必填字段和合法值规则的结构。
 - `count_empty_values(headers, rows)`：统计每一列空值数量。
 - `count_duplicate_values(headers, rows)`：统计每一列多出来的重复值数量。
 - `count_unique_values(headers, rows)`：统计每一列唯一值数量。
@@ -310,10 +317,11 @@ CSV 文件不是有效的 UTF-8 编码
 - 使用 mypy 严格检查类型
 - 使用 `.venv` 隔离项目开发工具
 - 使用 `logging` 和 `--verbose` 输出运行日志
+- 将配置读取与配置测试拆分为独立模块
 - Git 和 GitHub 项目管理
 
 ## 后续计划
 
-- 支持从配置文件读取多字段规则
+- 通过 `--config` 将 JSON 规则配置接入命令行
 - 增加 GitHub Actions 自动运行测试
 - 整理为可安装的命令行工具

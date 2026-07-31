@@ -1,5 +1,4 @@
 [tool.mypy]
 python_version = "3.14"
 strict = true
-files = ["csv_profile.py"]
-
+files = ["csv_profile.py", "config_loader.py"]

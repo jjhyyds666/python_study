@@ -6,6 +6,8 @@ import sys
 from pathlib import Path
 from typing import TypedDict, cast
 
+from config_loader import AllowedValueRules
+
 logger = logging.getLogger(__name__)
 
 FilePath = str | Path
@@ -13,7 +15,6 @@ Headers = list[str]
 Row = dict[str, str]
 Rows = list[Row]
 Counts = dict[str, int]
-AllowedValueRules = dict[str, list[str]]
 
 
 class RequiredValidation(TypedDict):
@@ -26,11 +27,6 @@ class AllowedValueValidation(TypedDict):
     missing_field: bool
     invalid_count: int
     invalid_values: list[str]
-
-
-class Config(TypedDict):
-    required_fields: list[str]
-    allowed_value_rules: AllowedValueRules
 
 
 class Profile(TypedDict):
@@ -69,17 +65,6 @@ def analyze_csv_file(file_path: FilePath) -> tuple[Headers, Rows]:
     except UnicodeDecodeError as error:
         raise ValueError("CSV 文件不是有效的 UTF-8 编码") from error
     return headers, cast(Rows, rows)
-
-
-def load_config(file_path: FilePath) -> Config:
-    """读取 JSON 配置文件并返回数据质量检查规则。"""
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            config_data = json.load(file)
-    except json.JSONDecodeError as error:
-        raise ValueError("配置文件不是有效的 JSON") from error
-
-    return cast(Config, config_data)
 
 
 def validate_csv_headers(headers: Headers) -> None:
@@ -384,6 +369,7 @@ def parse_args() -> argparse.Namespace:
 
     return args
 
+
 def configure_logging(verbose: bool) -> None:
     """根据 verbose 开关配置命令行日志等级。"""
     if verbose:
@@ -395,6 +381,7 @@ def configure_logging(verbose: bool) -> None:
         level=level,
         format="%(levelname)s: %(message)s",
     )
+
 
 def main() -> None:
     """程序入口：读取参数、分析 CSV，并按需输出 Markdown 或 JSON 报告。"""
@@ -419,9 +406,9 @@ def main() -> None:
         allowed_value_rules=allowed_value_rules,
     )
     logger.info(
-    "CSV 分析完成: %d 行, %d 列",
-    profile["row_count"],
-    profile["column_count"],
+        "CSV 分析完成: %d 行, %d 列",
+        profile["row_count"],
+        profile["column_count"],
     )
     report = build_markdown_report(profile)
 
