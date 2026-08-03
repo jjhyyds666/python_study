@@ -4,7 +4,7 @@
 
 这个项目来自我的 Python 软件工程学习路线，目标是把基础语法练习推进到一个可维护、可测试、可展示的工程项目。项目场景参考 AI 数据标注、数据清洗和数据交付流程中常见的数据质检需求。
 
-当前状态：第一阶段功能已完成，第二阶段 CLI 工程化进行中，包含 39 个 pytest 测试，并通过 mypy 严格类型检查。
+当前状态：第一阶段功能已完成，第二阶段 CLI 工程化接近收尾，包含 40 个 pytest 测试，并通过 mypy 严格类型检查。
 
 ## 功能
 
@@ -34,14 +34,19 @@
 dataqa-cli/
 ├── .gitignore
 ├── README.md
-├── config_loader.py
-├── csv_profile.py
 ├── pyproject.toml
 ├── requirements-dev.txt
 ├── rules.json
 ├── sample.csv
+├── src/
+│   └── dataqa_cli/
+│       ├── __init__.py
+│       ├── __main__.py
+│       ├── config_loader.py
+│       └── csv_profile.py
 ├── test_config_loader.py
-└── test_csv_profile.py
+├── test_csv_profile.py
+└── test_package_entry.py
 ```
 
 ## 运行环境
@@ -80,6 +85,12 @@ python -m venv .venv
 
 ```powershell
 dataqa .\sample.csv
+```
+
+也可以通过 Python 的包入口运行：
+
+```powershell
+python -m dataqa_cli .\sample.csv
 ```
 
 指定预览行数：
@@ -361,4 +372,5 @@ pytest 和 mypy 必须全部通过，工作流才会显示绿色成功。
 
 ## 后续计划
 
-- 整理为可安装的命令行工具
+- 完成第二阶段验收并发布 `dataqa-cli` v1.0
+- 进入 SQL、HTTP 与 Linux 基础学习

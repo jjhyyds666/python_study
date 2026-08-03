@@ -8,12 +8,15 @@ version = "0.1.0"
 requires-python = ">=3.14"
 
 [project.scripts]
-dataqa = "csv_profile:main"
+dataqa = "dataqa_cli.csv_profile:main"
 
 [tool.setuptools]
-py-modules = ["csv_profile", "config_loader"]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
 
 [tool.mypy]
 python_version = "3.14"
 strict = true
-files = ["csv_profile.py", "config_loader.py"]
+files = ["src/dataqa_cli"]

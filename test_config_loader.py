@@ -2,7 +2,7 @@ import json
 
 import pytest
 
-from config_loader import load_config
+from dataqa_cli.config_loader import load_config
 
 
 def write_json_config(tmp_path, config_data):

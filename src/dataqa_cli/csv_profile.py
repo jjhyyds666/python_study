@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 from typing import TypedDict, cast
 
-from config_loader import (AllowedValueRules,
+from .config_loader import (AllowedValueRules,
                            load_config,
 
                            )

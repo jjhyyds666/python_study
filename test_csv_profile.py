@@ -3,7 +3,7 @@ import sys
 
 import pytest
 
-from csv_profile import (
+from dataqa_cli.csv_profile import (
     analyze_csv_file,
     build_json_report,
     build_markdown_report,
