@@ -1,3 +1,18 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dataqa-cli"
+version = "0.1.0"
+requires-python = ">=3.14"
+
+[project.scripts]
+dataqa = "csv_profile:main"
+
+[tool.setuptools]
+py-modules = ["csv_profile", "config_loader"]
+
 [tool.mypy]
 python_version = "3.14"
 strict = true

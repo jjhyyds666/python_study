@@ -68,30 +68,36 @@ python -m venv .venv
 .\.venv\Scripts\python.exe -m pip install -r requirements-dev.txt
 ```
 
+以可编辑模式安装项目并注册 `dataqa` 命令：
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -e .
+```
+
 ## 快速开始
 
 在项目目录下运行：
 
 ```powershell
-python .\csv_profile.py .\sample.csv
+dataqa .\sample.csv
 ```
 
 指定预览行数：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --preview 3
+dataqa .\sample.csv --preview 3
 ```
 
 显示详细运行日志：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --verbose
+dataqa .\sample.csv --verbose
 ```
 
 使用 JSON 规则配置：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --config .\rules.json
+dataqa .\sample.csv --config .\rules.json
 ```
 
 配置示例：
@@ -110,19 +116,19 @@ python .\csv_profile.py .\sample.csv --config .\rules.json
 生成 Markdown 报告：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --preview 3 --output report.md
+dataqa .\sample.csv --preview 3 --output report.md
 ```
 
 生成 JSON 报告：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --preview 3 --json-output report.json
+dataqa .\sample.csv --preview 3 --json-output report.json
 ```
 
 检查必填字段：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --required label text reviewer
+dataqa .\sample.csv --required label text reviewer
 ```
 
 这个示例中，如果 CSV 不包含 `reviewer`，程序会将它列为缺失字段；已经存在的 `label` 和 `text` 则会统计各自的空值数量。
@@ -130,25 +136,25 @@ python .\csv_profile.py .\sample.csv --required label text reviewer
 必填字段检查也可以与报告输出组合：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --required label text reviewer --output report.md --json-output report.json
+dataqa .\sample.csv --required label text reviewer --output report.md --json-output report.json
 ```
 
 检查 `label` 字段的合法值：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --allowed-labels greeting positive negative
+dataqa .\sample.csv --allowed-labels greeting positive negative
 ```
 
 同时生成 Markdown 和 JSON 报告：
 
 ```powershell
-python .\csv_profile.py .\sample.csv --allowed-labels greeting positive negative --output report.md --json-output report.json
+dataqa .\sample.csv --allowed-labels greeting positive negative --output report.md --json-output report.json
 ```
 
 查看命令帮助：
 
 ```powershell
-python .\csv_profile.py --help
+dataqa --help
 ```
 
 如果 CSV 为空、缺少表头，或者某一行的列数与表头不一致，程序会显示对应行号和错误原因后退出，例如：
